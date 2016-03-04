@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM debian:wheezy
 MAINTAINER Colin Newell <colin@opusvl.com>
 USER root
 RUN apt-get update && apt-get install -y build-essential libexpat1-dev libpq-dev \
