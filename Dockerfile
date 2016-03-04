@@ -2,7 +2,7 @@ FROM debian:wheezy
 MAINTAINER Colin Newell <colin@opusvl.com>
 USER root
 RUN apt-get update && apt-get install -y build-essential libexpat1-dev libpq-dev \
-            libxml2-dev psmisc unzip less libjpeg62-turbo-dev libpng12-dev curl wget &&\
+            libxml2-dev psmisc unzip less libjpeg8-dev libpng12-dev curl wget &&\
     apt-get dist-upgrade -y
 RUN mkdir /opt/perl-5.14.4 && \
     mkdir /opt/perl-5.14.4/bin && \
