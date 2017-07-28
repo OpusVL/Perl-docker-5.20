@@ -35,3 +35,12 @@ RUN make install -j $(nproc)
 FROM debian:latest as release
 COPY --from=install /opt/perl-5.20.3 /opt/perl-5.20.3
 RUN ln -s /opt/perl-5.20.3 /opt/perl5
+
+FROM debian:latest AS dev
+COPY --from=release /opt/perl-5.20.3 /opt/perl-5.20.3
+RUN ln -s /opt/perl-5.20.3 /opt/perl5
+
+RUN apt-get update && apt-get install -y build-essential
+
+ENV PERL_MM_USE_DEFAULT 1
+RUN /opt/perl5/bin/cpan App::cpanminus
