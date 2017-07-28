@@ -2,25 +2,15 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
+        stage('Build for production') {
             steps {
-                echo 'Checking out...'
-                checkout scm
+                sh "docker build -t perl-5.20:${env.BRANCH_NAME} ."
             }
         }
-        stage('Build') {
+
+        stage('Build for development') {
             steps {
-                echo 'Building..'
-            }
-        }
-        stage('Test') {
-            steps {
-                echo 'Testing..'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying....'
+                sh "docker build -t perl-5.20-dev:${env.BRANCH_NAME} -f Dockerfile.dev ."
             }
         }
     }

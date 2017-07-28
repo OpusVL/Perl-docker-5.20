@@ -1,17 +1,37 @@
-FROM debian:jessie
-MAINTAINER Colin Newell <colin@opusvl.com>
-USER root
-RUN apt-get update && apt-get install -y build-essential libexpat1-dev libpq-dev \
-            libxml2-dev psmisc unzip less libjpeg62-turbo-dev libpng12-dev curl wget &&\
-    apt-get dist-upgrade -y
-RUN mkdir /opt/perl-5.20.3 && \
-    mkdir /opt/perl-5.20.3/bin && \
-    mkdir /opt/perl-5.20.3/lib && \
-    mkdir /opt/perl-5.20.3/man
+FROM debian:latest as fetch
+MAINTAINER OpusVL <dev@opusvl.com>
+
+RUN apt-get update && apt-get install -y curl bzip2
+RUN curl https://cpan.metacpan.org/authors/id/S/SH/SHAY/perl-5.20.3.tar.bz2 | tar -jx
+
+FROM debian:latest as build
+COPY --from=fetch /perl-5.20.3 /perl-5.20.3
+
+RUN apt-get update && apt-get -y install build-essential
+
+WORKDIR /perl-5.20.3
+
+RUN ./Configure -des -Dprefix=/opt/perl-5.20.3
+RUN make -j $(nproc)
+
+FROM debian:latest as test
+COPY --from=build /perl-5.20.3 /perl-5.20.3
+
+RUN apt-get update && apt-get -y install build-essential procps
+
+WORKDIR /perl-5.20.3
+
+RUN make test -j $(nproc)
+
+FROM debian:latest as install
+COPY --from=build /perl-5.20.3 /perl-5.20.3
+
+RUN apt-get update && apt-get -y install build-essential
+
+WORKDIR /perl-5.20.3
+
+RUN make install -j $(nproc)
+
+FROM debian:latest as release
+COPY --from=install /opt/perl-5.20.3 /opt/perl-5.20.3
 RUN ln -s /opt/perl-5.20.3 /opt/perl5
-WORKDIR /root
-RUN wget https://cpan.metacpan.org/authors/id/S/SH/SHAY/perl-5.20.3.tar.bz2 &&\
-    tar -jxf perl-5.20.3.tar.bz2 && rm perl-5.20.3.tar.bz2 &&\
-    cd /root/perl-5.20.3 && ./Configure -des -Dprefix=/opt/perl-5.20.3 && \
-    make && make test && make install && rm -rf /root/perl-5.20.3
-RUN cd /root; curl -L https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm | /opt/perl5/bin/perl - --self-upgrade
