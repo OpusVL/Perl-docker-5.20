@@ -13,5 +13,13 @@ pipeline {
                 sh "docker build --target dev -t perl-5.20-dev:${env.BRANCH_NAME} ."
             }
         }
+        
+        stage('Push') {
+            steps {
+                sh "docker tag perl-5.20:${env.BRANCH_NAME} quay.io/opusvl/perl-5.20:${env.BRANCH_NAME}"
+                sh "docker tag perl-5.20-dev:${env.BRANCH_NAME} quay.io/opusvl/perl-5.20-dev:${env.BRANCH_NAME}"
+                sh "docker push"
+            }
+        }
     }
 }
